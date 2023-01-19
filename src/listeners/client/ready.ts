@@ -12,7 +12,7 @@ module.exports = (client: Client) => {
     console.log("    Developed by Pateres#3767");
     console.log(`    Do not redistribute!`);
     console.log("=================================");
-    client.user.setActivity(config.activity.message || "Mixelate", { type: config.activity.type });
+    client.user.setActivity(config.activity.message || "Mixelate", { type: config.activity.type || 3});
 
     loadCommands(client);
 
