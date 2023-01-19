@@ -4,7 +4,7 @@ import { createTranscript } from "discord-html-transcripts";
 const ms = require("ms"),
     config = require("../config/config.json"),
     messages = require("../config/messages.json"),
-    { generateInvoice } = require("../utils/helper");
+    { generateInvoice, isTicket } = require("../utils/helper");
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -72,13 +72,14 @@ module.exports = {
      */
     async execute(interaction: ChatInputCommandInteraction) {
         const subCommand = interaction.options.getSubcommand();
-        const user = interaction.options.getUser("user");
-        
-        if (!interaction.channel?.fetch.name.includes(config.tickets.layout.commission) || !interaction.channel?.fetch.name.includes(config.tickets.layout.application) || !interaction.channel?.fetch.name.includes(config.tickets.layout.support))  {
-            return interaction.reply({
-                embeds: [new EmbedBuilder().setColor(config.errorColor).setAuthor({ name:"This command can only be sent inside of a ticket!", iconURL: `${interaction.guild?.iconURL()}` })]
-            });
-        }
+
+        if (!isTicket(interaction.channel)) return interaction.reply({
+            embeds: [new EmbedBuilder().setColor(config.errorColor).setAuthor({
+                name: "This command can only be sent inside of a ticket!",
+                iconURL: `${interaction.guild?.iconURL()}`
+            })],
+            ephemeral: true
+        });
         switch (subCommand) {
             case "panel": {
                 if (interaction.member == null) return;
@@ -112,6 +113,13 @@ module.exports = {
             }
                 break;
             case 'begin': {
+                const member = interaction.guild?.members.cache.find(u => u.id === interaction.user.id);
+                if (!member?.roles.cache.find(role => role.id === config.roles.commission)) return interaction.reply({
+                    embeds: [new EmbedBuilder()
+                        .setColor(config.errorColor)
+                        .setAuthor({ name: `Only commission managers may use this command!`, iconURL: `${interaction.guild?.iconURL()}` })],
+                    ephemeral: true
+                });
                 let amount = interaction.options.getInteger("amount");
                 if (!amount || isNaN(amount) || amount < 1) {
                     return;
@@ -119,11 +127,19 @@ module.exports = {
                 // @ts-ignore
                 amount = parseFloat(amount);
                 amount = Math.round((amount + Number.EPSILON) * 100) / 100;
-                
+
                 return generateInvoice(interaction, amount);
             }
                 break;
             case "invite": {
+                const user = interaction.options.getUser("user");
+                const member = interaction.guild?.members.cache.find(u => u.id === interaction.user.id);
+                if (!member?.roles.cache.find(role => role.id === config.roles.commission)) return interaction.reply({
+                    embeds: [new EmbedBuilder()
+                        .setColor(config.errorColor)
+                        .setAuthor({ name: `Only commission managers may use this command!`, iconURL: `${interaction.guild?.iconURL()}` })],
+                    ephemeral: true
+                });
                 // @ts-ignore
                 interaction.channel.permissionOverwrites.create(user, {
                     SendMessages: true,
@@ -152,15 +168,13 @@ module.exports = {
             }
                 break;
             case "close": {
-                const member = interaction.guild?.members.cache.find(u => u.id === user?.id);
-                if (!member?.roles.cache.some(role => role.id === config.roles.commission)) {
-                    return interaction.reply({
-                        embeds: [new EmbedBuilder()
-                            .setColor(config.errorColor)
-                            .setAuthor({ name: `Only commission managers may use this command!`, iconURL: `${interaction.guild?.iconURL()}` })],
-                        ephemeral: true
-                    });
-                }
+                const member = interaction.guild?.members.cache.find(u => u.id === interaction.user.id);
+                if (!member?.roles.cache.find(role => role.id === config.roles.commission)) return interaction.reply({
+                    embeds: [new EmbedBuilder()
+                        .setColor(config.errorColor)
+                        .setAuthor({ name: `Only commission managers may use this command!`, iconURL: `${interaction.guild?.iconURL()}` })],
+                    ephemeral: true
+                });
                 const time = interaction.options.getString("time");
                 const channel = interaction.guild?.channels.cache.find(c => c.id === config.channels.transcript);
                 if (!channel) return interaction.reply({
@@ -182,8 +196,9 @@ module.exports = {
                             useCDN: true
                         }).then(async attachment => {
                             // @ts-ignore
-                            await channel.send({
-                                embeds: [new EmbedBuilder().setColor(config.embedColor).setTitle("Ticket Closure")
+                            channel.send({
+                                embeds: [new EmbedBuilder().setColor(config.embedColor).setTitle("Completed Commission")
+                                    .setDescription(`${interaction.channel?.toString()} has been marked as complete, and the transcript has been attached.`)
                                     .addFields({
                                         name: "Ticket Name",
                                         // @ts-ignore
@@ -207,15 +222,14 @@ module.exports = {
             }
                 break;
             case "complete": {
-                const member = interaction.guild?.members.cache.find(u => u.id === user?.id);
-                if (!member?.roles.cache.some(role => role.id === config.roles.commission)) {
-                    return interaction.reply({
-                        embeds: [new EmbedBuilder()
-                            .setColor(config.errorColor)
-                            .setAuthor({ name: `Only commission managers may use this command!`, iconURL: `${interaction.guild?.iconURL()}` })],
-                        ephemeral: true
-                    });
-                }
+                const user = interaction.user;
+                const member = interaction.guild?.members.cache.find(u => u.id === user.id);
+                if (!member?.roles.cache.find(role => role.id === config.roles.commission)) return interaction.reply({
+                    embeds: [new EmbedBuilder()
+                        .setColor(config.errorColor)
+                        .setAuthor({ name: `Only commission managers may use this command!`, iconURL: `${interaction.guild?.iconURL()}` })],
+                    ephemeral: true
+                });
                 const embed = new EmbedBuilder()
                     .setTitle("Commission Complete!")
                     .setDescription(`${user} has marked this commission as complete.\n\nOnce the final product is received, you have up to 72 hours to receive a partial refund.`)
@@ -228,15 +242,33 @@ module.exports = {
 
                 interaction.channel?.send({
                     embeds: [embed, embed2]
-                })
+                });
+                return interaction.reply({
+                    content: "Successfully marked this commission as completed!",
+                    ephemeral: true
+                });
             }
                 break;
             case "accept": {
-
+                const user = interaction.options.getUser("user");
+                const member = interaction.guild?.members.cache.find(u => u.id === interaction.user.id);
+                if (!member?.roles.cache.find(role => role.id === config.roles.reviewer)) return interaction.reply({
+                    embeds: [new EmbedBuilder()
+                        .setColor(config.errorColor)
+                        .setAuthor({ name: `Only application reviewers may use this command!`, iconURL: `${interaction.guild?.iconURL()}` })],
+                    ephemeral: true
+                });
             }
                 break;
             case "deny": {
-
+                const user = interaction.options.getUser("user");
+                const member = interaction.guild?.members.cache.find(u => u.id === interaction.user.id);
+                if (!member?.roles.cache.find(role => role.id === config.roles.reviewer)) return interaction.reply({
+                    embeds: [new EmbedBuilder()
+                        .setColor(config.errorColor)
+                        .setAuthor({ name: `Only application reviewers may use this command!`, iconURL: `${interaction.guild?.iconURL()}` })],
+                    ephemeral: true
+                });
             }
                 break;
         }

@@ -7,16 +7,17 @@ const config = require('../config/config.json'),
 
 function hasRoles(member: any, roleArray: any, ignoreAdminOverride: boolean) {
     try {
-        return member.roles.cache.some((r: { name: Role; }) => roleArray.includes(r.name) || member.roles.cache.some((r: { id: Role; }) => roleArray.includes(r.id))) || ((!ignoreAdminOverride && config.permissions.ignoreAdmin) ? member.permissions.has("ADMINISTRATOR") : false);
+        return member.roles.cache.some((r: any) => roleArray.includes(r.name) || member.roles.cache.some((r: any) => roleArray.includes(r.id))) || ((!ignoreAdminOverride && config.permissions.ignoreAdmin) ? member.permissions.has("ADMINISTRATOR") : false);
     } catch (err: any) {
-        console.log(err.message);
-        return false;
+        return console.log(err.message);
     }
 }
 
 function isTicket(channel: any) {
     if (!channel || !channel.name) return false;
-    return (channel.name.includes(config.layout.application || "app-") || channel.name.includes(config.layout.support || "support-") || channel.name.includes(config.layout.commission || "commission-"))
+    return (channel.name.startsWith(config.tickets.layout.application || "application-") ||
+        channel.name.startsWith(config.tickets.layout.support || "support-") ||
+        channel.name.startsWith(config.tickets.layout.commission || "order-"))
 }
 
 function printRoles(array: String[], interaction: any) {
@@ -85,10 +86,10 @@ function startOrder(client: Client, guild: Guild, member: GuildMember, interacti
                 }
             });
             collectOne.on('end', () => {
-                
+
             })
         })
-        
+
     });
 }
 
