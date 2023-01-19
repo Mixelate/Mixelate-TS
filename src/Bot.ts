@@ -16,7 +16,7 @@ client.giveawaysManager = new GiveawaysManager(client, {
 		botsCanWin: false,
 		exemptPermissions: ["MANAGE_MESSAGES", "ADMINISTRATOR"],
 		embedColor: client.config.embedColor,
-		embedColorEnd: client.config.embedColor,
+		embedColorEnd: client.config.errorColor,
 		reaction: '🎉'
 	}
 });
@@ -31,4 +31,5 @@ console.log("🔃 Application is launching...");
 
 client.login(client.config.token);
 
+module.exports = client;
 export { };
