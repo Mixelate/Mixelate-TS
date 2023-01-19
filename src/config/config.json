@@ -1,0 +1,90 @@
+{
+    "token": "MTA1NjI0MjAyNjQ4OTg0NzgxOA.G6l6Cr.p_RH45v5EScnyeAw64xLn2K6DbrG_VqmOimrRg",
+    "activity": {
+        "message": "Mixelate",
+        "type": 3
+    },
+    "databaseURL": "mongodb+srv://mixelate:mixelate@mixelate.trzsegm.mongodb.net/?retryWrites=true&w=majority",
+    "embedColor": "65A7E6",
+    "errorColor": "8B0000",
+    "paypal": {
+        "systemType": "invoice",
+        "freePort": 3000,
+        "ip": "http://localhost",
+        "PPEmail": "sb-oouf472459191@business.example.com",
+        "PPcID": "ATKRsLXRsrZStPnykgjf9ocbg0Ne7pwboYWu6LnfGIE4l2aRNrDq9e1tskDvR-rNL-H5XSESIywjV73W",
+        "PPSecret": "EHA4By9o1QjSW3pF2PYCnq3JmO_tHeViFxneB-PJDXnMGFSy4nyt0mCe8TK41GJhdBTnHsBjlIARmW_s",
+        "PPMode": "sandbox",
+        "productDescription": "By paying this invoice you automatically agree to all terms listed on our Website and Discord: \nhttps://mixelate.gg/policies/terms-of-service",
+        "productNotes": "Thank you for using Mixelate!"
+    },
+    "permissions": {
+        "ignoreAdmin": true
+    },
+    "roles": {
+        "client": "709283142611107848",
+        "freelancer": "1065109583896530964",
+        "commission": "1065109396297887776",
+        "support": "712360817617535007",
+        "reviewer": "1065109490212536340"
+    },
+    "channels": {
+        "payout": "1065109212348293241",
+        "transcript": "1065109262247927839"
+    },
+    "categories": {
+        "commission": "1059703325500637234",
+        "application": "1059703392206856282",
+        "support": "1059703278738354177"
+    },
+    "tickets": {
+        "layout": {
+            "commission": "order-",
+            "application": "application-",
+            "support": "support-"
+        },
+        "limits": {
+            "commission": 2,
+            "application": 1,
+            "support": 1
+        },
+        "roles": {
+            "commission": [
+                "1065109396297887776"
+            ],
+            "application": [
+                "1065109490212536340"
+            ],
+            "support": [
+                "712360817617535007"
+            ]
+        },
+        "departments": {
+            "design": [
+                "Illustrator",
+                "GFX Designer",
+                "Skin Designer",
+                "Model Designer",
+                "Render Artist",
+                "Vector Artist",
+                "Texture Artist"
+            ],
+            "development": [
+                "App Developer",
+                "Bot Developer",
+                "Plugin Developer",
+                "Data Pack Developer",
+                "Mod Developer"
+            ],
+            "web": [
+                "Forum Designer",
+                "Pterodactyl Designer",
+                "Store Designer",
+                "UIX Designer",
+                "Web Designer",
+                "Wix Designer",
+                "Web Developer"
+            ]
+        }
+    }
+}

@@ -1,0 +1,92 @@
+{
+    "help": {
+        "buttons": {
+            "client": {
+                "text": "Client",
+                "emoji": "✋"
+            },
+            "freelancer": { 
+                "text": "Freelancer",
+                "emoji": "🎨"
+            },
+            "staff": { 
+                "text": "Staff",
+                "emoji": "📊"
+            }
+        },
+        "embeds": {
+            "main": {
+                "title": "Mixelate | Help Menu",
+                "description": "```For any other questions, please navigate to the quick support or create ticket channel.```\nSelect one of the buttons below to view the designated commands for each section!"
+            },
+            "client": {
+                "title": "Mixelate | Base Commands",
+                "description": "`/help` - Shows this message.\n\n`/profile view <@user>` - View a freelancers profile.\n\n`/ticket transcript` - Generate a transcript for your ticket.\n\n`/wallet withdraw <amount>` - Withdraw funds from your wallet.\n`/wallet spendings` - View all your spendings to Mixelate!\n`/wallet earnings` - View all your earnings from Mixelate!\n`/wallet balance` - View your current balance!\n`/wallet calculate <amount>` - Calculates payment after PP and Mixelate Fees!"
+            },
+            "freelancer": {
+                "title": "Mixelate | Freelancer Commands",
+                "description": "`/profile set <section> <value>` - Set or update a section on your profile.\nSections: `About Me`, `Portfolio`, `Timezone`, `Email`, `PayPal.Me`, `Pronouns`\n\n`/ticket leave` - Leave and repost ticket to be claimed by a different freelancer."
+            },
+            "staff": {
+                "title": "Mixelate | Staff Commands",
+                "description": "**Commission Managers**\n`/ticket repost` - Reposts a ticket to be re-claimed by a different freelancer.\n`/ticket addcharge <amount>` - Creates an additional invoice.\n`/ticket newprice <amount>` - Set the new price of a commission.\n`/ticket begin` -Begin the commission process.\n`/ticket invite <@user>` - Add an additional user to a ticket.\n`/ticket close <time>` - Close a ticket after the specified duration.\n`/ticket complete` - Complete the commission and send additional resources.\n*Note: This will close the ticket after 48hrs along with review and tip prompt.*\n\n**Application Reviewer**\n`/ticket accept` - Accept an application and apply appropriate roles.\n`/ticket deny` - Deny an application."
+            }
+        }
+    },
+    "ticket": {
+        "panel": {
+            "buttons": {
+                "commission": {
+                    "text": "Order",
+                    "emoji": "🛒"
+                },
+                "application": {
+                    "text": "Apply",
+                    "emoji": "📃"
+                },
+                "support": {
+                    "text": "Support",
+                    "emoji": "🎫"
+                }
+            }
+        },
+        "commission": {
+            "role": {
+                "title": "Select the relevant service below.",
+                "description": "Ping the role of the service you would like to order."
+            }
+        },
+        "application": {
+            "department": {
+                "design": {
+                    "label": "🎨 Design",
+                    "description": "Illustrator, GFX, Skin, Model Designer, Render, Vector, Texture, Artist"
+                }
+            }
+        }
+    },
+    "wallet": {
+        "buttons": {
+            "earnings": {
+                "text": "Earnings",
+                "emoji": "💰"
+            },
+            "spendings": {
+                "text": "Spendings",
+                "emoji": "🤝"
+            },
+            "balance": {
+                "text": "Balance",
+                "emoji": "💵"
+            },
+            "withdraw": {
+                "text": "Withdraw",
+                "emoji": "🤑"
+            },
+            "calculator": {
+                "text": "Calculator",
+                "emoji": "🧮"
+            }
+        }
+    }
+}
