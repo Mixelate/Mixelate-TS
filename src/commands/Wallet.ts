@@ -40,13 +40,13 @@ module.exports = {
      * @param {ChatInputCommandInteraction} interaction 
      */
     async execute(interaction: ChatInputCommandInteraction) {
+        if (interaction.member == null) return;
         const subCommand = interaction.options.getSubcommand();
         const user = interaction.user;
         const userData = await freelancerSchema.findOne({ user: user?.id }) || new freelancerSchema({ user: user?.id });
 
         switch (subCommand) {
             case "menu": {
-                if (interaction.member == null) return;
                 const buttons = new ActionRowBuilder<ButtonBuilder>()
                     .addComponents(
                         new ButtonBuilder()
@@ -73,10 +73,9 @@ module.exports = {
                             .setCustomId(`wallet-calc-${interaction.member.user.id}`)
                             .setLabel(messages.wallet.buttons.calculator.text)
                             .setEmoji(messages.wallet.buttons.calculator.emoji)
-                            .setStyle(ButtonStyle.Secondary),
-                    );
+                            .setStyle(ButtonStyle.Secondary));
                 const menuEmbed = new EmbedBuilder()
-                    .setAuthor({ name: `${user.tag}'s Wallet`, iconURL: `${interaction.user.avatarURL()}` })
+                    .setAuthor({ name: `${user.username}'s Wallet`, iconURL: `${interaction.user.avatarURL()}` })
                     .setColor(config.embedColor);
                 return interaction.reply({
                     embeds: [menuEmbed],
@@ -107,13 +106,10 @@ module.exports = {
                 break;
             case "earnings": {
                 const earnEmbed = new EmbedBuilder()
-                    .setAuthor({ name: `Your Earnings`, iconURL: `${interaction.guild?.iconURL()}` })
-                    .setDescription(`You have earned \`$${userData.totalEarnings}\` during your time at Mixelate!`)
+                    .setAuthor({ name: `${user.username}'s Wallet`, iconURL: `${user.avatarURL()}` })
+                    .setDescription(`During your time at Mixelate, you have earned:\n\`\`\`$${userData.totalEarnings}\`\`\``)
                     .setColor(config.embedColor)
-                    .setThumbnail(user.avatarURL())
-                    .setFooter({
-                        text: "Want more? Upgrade to Freelancer+ to avoid the fees!"
-                    })
+                    .setFooter({ text: `Mixelate | ${user.id}` })
 
                 await interaction.reply({
                     embeds: [earnEmbed],
@@ -124,10 +120,10 @@ module.exports = {
             case "spendings": {
                 // whip: find how to extract spendings from user
                 const spendEmbed = new EmbedBuilder()
-                    .setAuthor({ name: `Your Spendings`, iconURL: `${interaction.guild?.iconURL()}` })
-                    .setDescription(`You have spent \`$${userData.totalBalance}\` during your time at Mixelate!`)
-                    .setThumbnail(user.avatarURL())
+                    .setAuthor({ name: `${user.username}'s Wallet`, iconURL: `${user.avatarURL()}` })
+                    .setDescription(`During your time at Mixelate, you have spent:\n\`\`\`$${userData.totalBalance}\`\`\``)
                     .setColor(config.embedColor)
+                    .setFooter({ text: `Mixelate | ${user.id}` })
 
                 await interaction.reply({
                     embeds: [spendEmbed],
@@ -137,10 +133,10 @@ module.exports = {
                 break;
             case "balance": {
                 const balEmbed = new EmbedBuilder()
-                    .setAuthor({ name: `Your Balance`, iconURL: `${interaction.guild?.iconURL()}` })
-                    .setDescription(`USD Balance: \`$${userData.availableBalance}\``)
-                    .setThumbnail(user.avatarURL())
+                    .setAuthor({ name: `${user.username}'s Wallet`, iconURL: `${user.avatarURL()}` })
+                    .setDescription(`Your current USD balance is:\n\`\`\`$${userData.availableBalance}\`\`\``)
                     .setColor(config.embedColor)
+                    .setFooter({ text: `Mixelate | ${user.id}` })
 
                 await interaction.reply({
                     embeds: [balEmbed],
@@ -183,7 +179,7 @@ module.exports = {
                     const channel = interaction.guild?.channels.cache.find(c => c.id === config.channels.payout);
                     if (!channel) return interaction.reply({
                         embeds: [new EmbedBuilder()
-                            .setColor(config.embedColor)
+                            .setColor(config.errorColor)
                             .setAuthor({ name: "Payout channel not found, please contact an administrator.", iconURL: `${interaction.guild?.iconURL()}` })]
                     });
                     freelancerSchema.findOneAndUpdate({
@@ -209,12 +205,11 @@ module.exports = {
                 } else {
                     return interaction.reply({
                         embeds: [new EmbedBuilder()
-                            .setColor(config.embedColor)
+                            .setColor(config.errorColor)
                             .setAuthor({ name: "The amount requested must be less than or equal to your current balance.", iconURL: `${interaction.guild?.iconURL()}` })],
                         ephemeral: true
                     });
                 }
-
             }
         }
     }

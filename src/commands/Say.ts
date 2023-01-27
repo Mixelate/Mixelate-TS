@@ -35,14 +35,12 @@ module.exports = {
         if (interaction.member == null) return;
 
         const member = interaction.guild?.members.cache.find(u => u.id === interaction.user.id);
-        if (!member?.permissions.has(PermissionFlagsBits.Administrator)) {
-            return interaction.reply({
-                embeds: [new EmbedBuilder()
-                    .setColor(config.embedColor)
-                    .setAuthor({ name: "Only Officers may use this command!", iconURL: `${interaction.guild?.iconURL()}` })],
-                ephemeral: true
-            });
-        }
+        if (!member?.permissions.has(PermissionFlagsBits.Administrator)) return interaction.reply({
+            embeds: [new EmbedBuilder()
+                .setColor(config.embedColor)
+                .setAuthor({ name: "Only Officers may use this command!", iconURL: `${interaction.guild?.iconURL()}` })],
+            ephemeral: true
+        });
 
         const format = interaction.options.getString('format');
         const msg = interaction.options.getString('message');
@@ -63,7 +61,7 @@ module.exports = {
                     });
                 } else {
                     return interaction.channel?.send({
-                        content: `${role} \n \n ${msg}`
+                        content: `${role}\n\n${msg}`
                     });
                 }
             }

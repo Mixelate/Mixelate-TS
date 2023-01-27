@@ -1,19 +1,19 @@
 // @ts-ignore
 const { model, Schema } = require("mongoose");
 
+let qSchema = new Schema({
+    question: { type: String },
+    answer: { type: String }
+});
+
 let ticketSchema = new Schema({
     ticketID: { type: String, unique: true, required: true },
     channelID: { type: String, unique: true },
-    type: { type: String },
-    user: { type: String },
+    questions: [qSchema],
+    msgID: { type: String },
+    userID: { type: String },
+    reviewerID: { type: String },
     roleID: { type: String },
-    cmID: { type: String },
-    freelancerID: { type: String },
-    quotes: { type: String},
-    questions: { type: String},
-    budget: { type: Number},
-    claimed: { type: Number },
-    msg: { type: String }
 },
     { timestamps: true }
 );

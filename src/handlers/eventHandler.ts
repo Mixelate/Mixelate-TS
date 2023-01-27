@@ -1,6 +1,5 @@
 async function loadListeners(client: any) {
     const ascii = require("ascii-table"),
-        path = require("path"),
         fs = require("fs");
 
     await client.events.clear;

@@ -7,10 +7,10 @@ let freelancerSchema = new Schema({
     timezone: { type: String, default: "No Timezone Set!" },
     email: { type: String, default: "No Email Set!" },
     paypal: { type: String, default: "No PayPal.me Set!" },
-    about: { type: String, default: "This user didn't set their bio yet!"},
+    about: { type: String, default: "This user hasn't set their bio yet!"},
     pronouns: { type: String, default: "No Pronouns Set!" },
-    claims: { type: Number, default: 0},
     rating: { type: String, default: "Not Rated" },
+    completed: { type: Number, default: 0},
     totalEarnings: { type: Number, default: 0},
     totalBalance: { type: Number, default: 0},
     availableBalance: { type: Number, default: 0}

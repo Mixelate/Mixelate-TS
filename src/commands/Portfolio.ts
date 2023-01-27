@@ -9,7 +9,7 @@ module.exports = {
         .setDescription("Shows a freelancer's portfolio.")
         .addUserOption(option =>
             option.setName("freelancer")
-                .setDescription("Which freelancer's portfolio would you like to see?")),
+                .setDescription("Which freelancer's portfolio would you like to view?")),
     /**
      * 
      * @param {ChatInputCommandInteraction} interaction 
@@ -31,6 +31,7 @@ module.exports = {
                 .setAuthor({ name: `${user.username}'s Portfolio`, iconURL: `${user.avatarURL()}` })
                 .setDescription(`${userData.portfolio}`)
                 .setColor(config.embedColor)
+                .setFooter({ text: `Mixelate | ${user.id}` })
 
             interaction.reply({
                 embeds: [portfolioEmbed],
