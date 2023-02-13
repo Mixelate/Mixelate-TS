@@ -12,7 +12,7 @@ let ticketSchema = new Schema({
     questions: [qSchema],
     msgID: { type: String },
     userID: { type: String },
-    reviewerID: { type: String },
+    staffID: { type: String },
     roleID: { type: String },
 },
     { timestamps: true }

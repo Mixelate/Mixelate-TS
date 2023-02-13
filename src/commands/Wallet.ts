@@ -1,4 +1,4 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, Embed, EmbedBuilder, SlashCommandBuilder } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, EmbedBuilder, SlashCommandBuilder } from "discord.js";
 
 const freelancerSchema = require('../schemas/freelancer'),
     config = require("../config/config.json"),
@@ -107,7 +107,7 @@ module.exports = {
             case "earnings": {
                 const earnEmbed = new EmbedBuilder()
                     .setAuthor({ name: `${user.username}'s Wallet`, iconURL: `${user.avatarURL()}` })
-                    .setDescription(`During your time at Mixelate, you have earned:\n\`\`\`$${userData.totalEarnings}\`\`\``)
+                    .setDescription(`During your time at Mixelate, you have earned:\n\`\`\`$${userData.totalEarnings.toFixed(2)}\`\`\``)
                     .setColor(config.embedColor)
                     .setFooter({ text: `Mixelate | ${user.id}` })
 
@@ -121,7 +121,7 @@ module.exports = {
                 // whip: find how to extract spendings from user
                 const spendEmbed = new EmbedBuilder()
                     .setAuthor({ name: `${user.username}'s Wallet`, iconURL: `${user.avatarURL()}` })
-                    .setDescription(`During your time at Mixelate, you have spent:\n\`\`\`$${userData.totalBalance}\`\`\``)
+                    .setDescription(`During your time at Mixelate, you have spent:\n\`\`\`$${userData.totalBalance.toFixed(2)}\`\`\``)
                     .setColor(config.embedColor)
                     .setFooter({ text: `Mixelate | ${user.id}` })
 
@@ -134,7 +134,7 @@ module.exports = {
             case "balance": {
                 const balEmbed = new EmbedBuilder()
                     .setAuthor({ name: `${user.username}'s Wallet`, iconURL: `${user.avatarURL()}` })
-                    .setDescription(`Your current USD balance is:\n\`\`\`$${userData.availableBalance}\`\`\``)
+                    .setDescription(`Your current USD balance is:\n\`\`\`$${userData.availableBalance.toFixed(2)}\`\`\``)
                     .setColor(config.embedColor)
                     .setFooter({ text: `Mixelate | ${user.id}` })
 

@@ -129,7 +129,7 @@ module.exports = {
                     ephemeral: true
                 });
                 const profileEmbed = new EmbedBuilder()
-                    .setAuthor({ name: `${user.username}'s Profile`, iconURL: `${interaction.guild?.iconURL()}` })
+                    .setAuthor({ name: `${user.username}'s Profile ${userData.pronouns != "No Pronouns Set!" ? `(${userData.pronouns})` : ``}`, iconURL: `${interaction.guild?.iconURL()}` })
                     .setColor(config.embedColor)
                     .setDescription(`\`\`\`${userData.about}\`\`\``)
                     .addFields({

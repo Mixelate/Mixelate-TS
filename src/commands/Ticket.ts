@@ -1,6 +1,8 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, Embed, EmbedBuilder, SlashCommandBuilder, TextChannel } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, EmbedBuilder, SlashCommandBuilder, TextChannel } from "discord.js";
 import { createTranscript } from "discord-html-transcripts";
 
+const ticketSchema = require('../schemas/ticket');
+const commissionSchema = require('../schemas/commission');
 const ms = require("ms"),
     config = require("../config/config.json"),
     messages = require("../config/messages.json"),
@@ -65,7 +67,10 @@ module.exports = {
                 .setDescription("Accept an application and apply appropriate roles."))
         .addSubcommand(option =>
             option.setName("deny")
-                .setDescription("Deny an application.")),
+                .setDescription("Deny an application.")
+                .addStringOption(option =>
+                    option.setName("reason")
+                        .setDescription("What can this user do to better his chances of acceptance?"))),
     /**
      * 
      * @param {ChatInputCommandInteraction} interaction 
@@ -112,7 +117,7 @@ module.exports = {
                 });
             }
                 break;
-            case 'begin': {
+            case "begin": {
                 const member = interaction.guild?.members.cache.find(u => u.id === interaction.user.id);
                 if (!member?.roles.cache.find(role => role.id === config.roles.commission)) return interaction.reply({
                     embeds: [new EmbedBuilder()
@@ -177,6 +182,16 @@ module.exports = {
                 });
                 const time = interaction.options.getString("time");
                 const channel = interaction.guild?.channels.cache.find(c => c.id === config.channels.transcript);
+                const ticketData = await ticketSchema.findOne({ channelID: interaction.channel?.id }) ||  await commissionSchema.findOne({ channelID: interaction.channel?.id });
+                const user = interaction.guild?.members.cache.find(u => u.id === ticketData.userID);
+                const staff = interaction.guild?.members.cache.find(u => u.id === ticketData.staffID);
+                if (!ticketData) return interaction.reply({
+                    embeds: [new EmbedBuilder()
+                        .setColor(config.errorColor)
+                        .setAuthor({ name: `Ticket not found in database, contact an administrator.`, iconURL: `${interaction.guild?.iconURL()}` })],
+                    ephemeral: true
+                });
+
                 if (!channel) return interaction.reply({
                     embeds: [new EmbedBuilder().setColor(config.errorColor).setAuthor({ name: "Transcript log channel not found, please contact an administrator", iconURL: `${interaction.guild?.iconURL()}` })],
                     ephemeral: true
@@ -188,7 +203,7 @@ module.exports = {
                 interaction.reply({
                     embeds: [new EmbedBuilder().setColor(config.embedColor).setAuthor({ name: `This ticket has been scheduled to close in ${ms(ms(time))}.`, iconURL: `${interaction.guild?.iconURL()}` })]
                 }).then(async msg => {
-                    setTimeout(function () {
+                    setTimeout(async function () {
                         createTranscript(interaction.channel as TextChannel, {
                             // @ts-ignore
                             returnType: "attachment",
@@ -197,25 +212,29 @@ module.exports = {
                         }).then(async attachment => {
                             // @ts-ignore
                             channel.send({
-                                embeds: [new EmbedBuilder().setColor(config.embedColor).setTitle("Completed Commission")
-                                    .setDescription(`${interaction.channel?.toString()} has been marked as complete, and the transcript has been attached.`)
+                                // @ts-ignore
+                                embeds: [new EmbedBuilder().setColor(config.embedColor).setTitle(`${interaction.channel?.name.startsWith("commission") ? "Completed Commission" : "Ticket Closed"}`)
+                                    // @ts-ignore
+                                    .setDescription(`#${interaction.channel?.name} has been marked as complete, and the transcript has been attached.`)
                                     .addFields({
                                         name: "Ticket Name",
                                         // @ts-ignore
-                                        value: `${interaction.channel?.name}`,
+                                        value: `#${interaction.channel?.name}`,
                                         inline: true
                                     }, {
                                         name: "Client",
-                                        value: `WHIP`,
+                                        value: `${user}`,
                                         inline: true
                                     }, {
                                         name: "Commission Manager",
-                                        value: `WHIP`,
+                                        value: `${staff != null ? staff : "Not Assigned"}`,
                                         inline: true
                                     })],
                                 files: [attachment]
                             });
                         });
+                        await ticketSchema.findOneAndDelete({ channelID: interaction.channel?.id }, { useFindAndModify: false });
+                        await commissionSchema.findOneAndDelete({ channelID: interaction.channel?.id }, { useFindAndModify: false });
                         interaction.channel?.delete();
                     }, ms(time))
                 });
@@ -223,6 +242,10 @@ module.exports = {
                 break;
             case "complete": {
                 const user = interaction.user;
+                const commissionData = await commissionSchema.findOne({ channelID: interaction.channel?.id });
+                const freelancer = interaction.guild?.members.cache.find(f => f.id === commissionData.freelancerID);
+                const service = interaction.guild?.roles.cache.find(r => r.id === commissionData.roleID);
+
                 const member = interaction.guild?.members.cache.find(u => u.id === user.id);
                 if (!member?.roles.cache.find(role => role.id === config.roles.commission)) return interaction.reply({
                     embeds: [new EmbedBuilder()
@@ -234,23 +257,29 @@ module.exports = {
                     .setTitle("Commission Complete!")
                     .setDescription(`${user} has marked this commission as complete.\n\nOnce the final product is received, you have up to 72 hours to receive a partial refund.`)
                     .setColor(config.embedColor)
-                    .setFooter({ text: `AMOUNT has been added to FREELANCERS wallet.` })
+                    .setFooter({ text: `$${commissionData.charge.toFixed(2)} has been added to ${freelancer?.user.username} wallet.` })
                 const embed2 = new EmbedBuilder()
-                    .setDescription(`Please leave a rating for FREELANCER`)
+                    .setDescription(`Please leave a rating for ${freelancer?.user.username}`)
                     .setColor(config.embedColor)
                     .setFooter({ text: `Note: Reviews will be posted in a public channel.` })
 
                 interaction.channel?.send({
                     embeds: [embed, embed2]
-                });
-                return interaction.reply({
-                    content: "Successfully marked this commission as completed!",
-                    ephemeral: true
-                });
+                }).then((msg) => {
+                    interaction.reply({
+                        content: "Successfully marked this commission as completed!",
+                        ephemeral: true
+                    });
+                    // msg.react("1⃣").then(() => msg.react("2⃣").then(() => msg.react("3⃣").then(() => msg.react("4⃣").then(() => msg.react("5⃣"))))).then(() => {
+                    //     msg.awaitReactions((reaction: any, usr: any) => ["1⃣", "2⃣", "3⃣", "4⃣", "5⃣"].includes(reaction.emoji.name) && usr.id === commissionData.userID, {
+                    //         time: parseFloat(config.review.time) * 60 * 1000,
+                    //         max: 1
+                    //     });
+                    // });
+                })
             }
                 break;
             case "accept": {
-                const user = interaction.options.getUser("user");
                 const member = interaction.guild?.members.cache.find(u => u.id === interaction.user.id);
                 if (!member?.roles.cache.find(role => role.id === config.roles.reviewer)) return interaction.reply({
                     embeds: [new EmbedBuilder()
@@ -258,10 +287,39 @@ module.exports = {
                         .setAuthor({ name: `Only application reviewers may use this command!`, iconURL: `${interaction.guild?.iconURL()}` })],
                     ephemeral: true
                 });
+                const ticketData = await ticketSchema.findOne({ channelID: interaction.channel?.id });
+                const role = interaction.guild?.roles.cache.find(r => r.id === ticketData.roleID);
+                const freelancer = interaction.guild?.roles.cache.find(r => r.id === config.roles.freelancer);
+                const user = interaction.guild?.members.cache.find(u => u.id === ticketData.userID);
+
+                // @ts-ignore
+                user?.roles.add(role);
+                // @ts-ignore
+                user?.roles.add(freelancer);
+
+                const embed = new EmbedBuilder()
+                    .setTitle("Application Accepted")
+                    .setDescription("Congratulations! We have reviewed your application and would love to have you on our team!")
+                    .addFields({
+                        name: "Before you get started, please complete the steps below",
+                        value: "\`\`\`- Set up your freelancer profile! Use /profile menu\n\n- Read the documents in #guidelines for ticket process, regulations, and more.\`\`\`"
+                    })
+                    .setFooter({ text: "Let us know when you have completed these steps" })
+
+                interaction.reply({
+                    content: "Applicant successfully accepted!"
+                });
+                interaction.channel?.send({
+                    content: `${user}`,
+                    embeds: [embed]
+                }).then(() => {
+                    setTimeout(function () {
+                        interaction.channel?.delete();
+                    }, 86400000)
+                })
             }
                 break;
             case "deny": {
-                const user = interaction.options.getUser("user");
                 const member = interaction.guild?.members.cache.find(u => u.id === interaction.user.id);
                 if (!member?.roles.cache.find(role => role.id === config.roles.reviewer)) return interaction.reply({
                     embeds: [new EmbedBuilder()
@@ -269,6 +327,27 @@ module.exports = {
                         .setAuthor({ name: `Only application reviewers may use this command!`, iconURL: `${interaction.guild?.iconURL()}` })],
                     ephemeral: true
                 });
+                const ticketData = await ticketSchema.findOne({ channelID: interaction.channel?.id });
+                const user = interaction.guild?.members.cache.find(u => u.id === ticketData.userID);
+                const reason = interaction.options.getString("reason");
+
+                const embed = new EmbedBuilder()
+                    .setTitle("Application Denied")
+                    .setDescription("We're sorry to inform you at this time, we will not be pursing your candicacy for this role.")
+                    .addFields({
+                        name: "Please feel free to reapply after the following steps",
+                        value: `\`\`\`${reason}\`\`\``
+                    })
+                    .setFooter({ text: "This channel will automatically be closed in 24 hours" })
+
+                interaction.reply({
+                    embeds: [embed]
+                }).then(() => {
+                    setTimeout(function () {
+                        interaction.channel?.delete();
+                    }, 86400000)
+                })
+
             }
                 break;
         }

@@ -17,7 +17,8 @@ function isTicket(channel: any) {
     if (!channel || !channel.name) return false;
     return (channel.name.startsWith(config.tickets.layout.application || "application-") ||
         channel.name.startsWith(config.tickets.layout.support || "support-") ||
-        channel.name.startsWith(config.tickets.layout.commission || "order-"))
+        channel.name.startsWith(config.tickets.layout.commission || "order-") ||
+        channel.name.startsWith("ticket-"))
 }
 
 function printRoles(array: String[], interaction: any) {
@@ -117,8 +118,9 @@ function startApplication(client: Client, guild: Guild, member: GuildMember, int
         })]
     }).then((channel: any) => {
         const ticketData = new ticketSchema({
+            ticketID: channel.id,
             channelID: channel.id,
-            user: member.id,
+            userID: member.id,
             questions: [],
         });
         const row = new ActionRowBuilder<StringSelectMenuBuilder>()
@@ -148,7 +150,7 @@ function startApplication(client: Client, guild: Guild, member: GuildMember, int
         });
 
         ticketData.roleID = ""
-        ticketData.save()
+        ticketData.save();
         channel.send({
             content: `${member}`,
             embeds: [embed],
@@ -185,6 +187,12 @@ function requestSupport(client: Client, guild: Guild, member: GuildMember, inter
             }
         })]
     }).then((channel: any) => {
+        const ticketData = new ticketSchema({
+            ticketID: channel.id,
+            channelID: channel.id,
+            userID: member.id,
+            questions: [],
+        });
         const row = new ActionRowBuilder<StringSelectMenuBuilder>()
             .addComponents(
                 new StringSelectMenuBuilder()
@@ -222,6 +230,9 @@ function requestSupport(client: Client, guild: Guild, member: GuildMember, inter
             content: `Your ticket has been successfully created in ${channel}!`,
             ephemeral: true
         });
+        
+        ticketData.roleID = ""
+        ticketData.save();
         channel.send({
             embeds: [embed],
             components: [row]

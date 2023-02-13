@@ -25,7 +25,7 @@ let commissionSchema = new Schema({
     roleID: { type: String },
     channelID: { type: String, unique: true },
     freelancerID: { type: String },
-    cmID: { type: String }
+    staffID: { type: String }
 },
     { timestamps: true }
 );
